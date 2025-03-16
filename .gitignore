@@ -4,6 +4,9 @@
 # Ignore compiled object files
 *.o
 
+# Ignore executables
+UnitTest
+
 # Ignore backup files
 *.bak
 
