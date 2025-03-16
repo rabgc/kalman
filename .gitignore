@@ -28,3 +28,6 @@ Thumbs.db
 
 # Ignore Kalman.dSYM directory
 Kalman.dSYM/
+
+# Ignore TODO.md file
+TODO.md
