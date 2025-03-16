@@ -25,3 +25,6 @@ Thumbs.db
 # Ignore IDE specific files
 .vscode/
 .idea/
+
+# Ignore Kalman.dSYM directory
+Kalman.dSYM/
