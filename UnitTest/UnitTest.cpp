@@ -1,11 +1,11 @@
-// Test the Kalman Filter implementation with some simple examples
+// Test the Kalman Filter implementation with a simple example
 #include "../Kalman.hpp"  
 #include <iostream>
 #include <Eigen/Dense>
 #include <vector>
 
 
-// Example 1: multipe stacked n-dimensional state vectors 
+// Multipe stacked n-dimensional state vectors 
 int main() {
     
     // dynamics 
