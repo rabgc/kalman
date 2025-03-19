@@ -30,14 +30,14 @@ class KalmanFilter {
 public:
     /**
      * @brief Constructor for the KalmanFilter class.
-     * @param F State transition matrix.
-     * @param H Observation model.
+     * @param S State transition matrix.
+     * @param F Features matrix.
      * @param Q Process noise covariance.
      * @param R Measurement noise covariance.
      * @param P A priori state covariance.
      * @param x A priori state estimate.
      */
-    KalmanFilter(const Eigen::MatrixXd& F, const Eigen::MatrixXd& H,
+    KalmanFilter(const Eigen::MatrixXd& S, const Eigen::MatrixXd& F,
                  const Eigen::MatrixXd& Q, const Eigen::MatrixXd& R,
                  const Eigen::MatrixXd& P, const Eigen::VectorXd& x);
 
@@ -65,7 +65,7 @@ public:
     Eigen::MatrixXd getCovariance() const;
 
 private:
-    Eigen::MatrixXd F_, H_, Q_, R_, P_;
+    Eigen::MatrixXd S_, F_, Q_, R_, P_;
     Eigen::VectorXd x_;
 };
 
