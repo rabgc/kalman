@@ -12,15 +12,24 @@ KalmanFilter::KalmanFilter(const Eigen::MatrixXd& S, const Eigen::MatrixXd& F,
     : S_(S), F_(F), Q_(Q), R_(R), P_(P), x_(x) {
 
     // Ensure matrix dimensions are consistent
-    assert(S_.rows() == S_.cols() && "State trans S must be square.");
-    assert(S_.rows() == x_.size() && "State trans S and state x need same dim");
-    assert(P_.rows() == P_.cols() && "Cov P must be square");
-    assert(P_.rows() == x_.size() && "Cov P and state x need same dim");
-    assert(Q_.rows() == Q_.cols() && "Noise cov Q must be square");
-    assert(Q_.rows() == S_.rows() && "Noise cov Q and State trans S need same dim");
-    assert(F_.cols() == x_.size() && "Features F need same no. of cols as state x");
-    assert(R_.rows() == R_.cols() && "Obs err cov R must be square.");
-    assert(F_.rows() == R_.rows() && "Feature F and obs err cov R need same dim");
+    assert(S_.rows() == S_.cols() 
+        && "State transition S must be square.");
+    assert(S_.rows() == x_.size() 
+        && "State transition S and state vector x need same dim");
+    assert(P_.rows() == P_.cols() 
+        && "Cov matrix P must be square");
+    assert(P_.rows() == x_.size() 
+        && "Cov P matrix and state vector x need same dim");
+    assert(Q_.rows() == Q_.cols() 
+        && "Process noise cov matrix Q must be square");
+    assert(Q_.rows() == S_.rows() 
+        && "Process noise cov Q matrix and state transion S need same dim");
+    assert(F_.cols() == x_.size() 
+        && "Features matrix F need same no. of cols as state vector x");
+    assert(R_.rows() == R_.cols() 
+        && "Obs err cov matrix R must be square.");
+    assert(F_.rows() == R_.rows() 
+        && "Features matrix F and obs err cov matrix R need same dim");
 
     }
 
