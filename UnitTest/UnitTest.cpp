@@ -6,7 +6,8 @@
 
 
 // Multipe stacked n-dimensional state vectors 
-int main() {
+int main() 
+{
     
     /**  
      * System dynamics  
