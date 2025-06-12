@@ -19,11 +19,10 @@
  * design matrices all remain constant over the experiment.  
  * 
  * The state vector can be multi-dimensional, and the state vectors can be 
- * stacked to mtrack ultile objects (stations, satellites, etc).
+ * stacked to track multile objects (stations, satellites, etc).
  *
  * The KalmanFilter class provides methods for predicting and updating a state 
- * vector with an associated covariance matrix using a given state transition 
- * model.
+ * vector and its covariance matrix for a given state transition model.
  * 
  */
 class KalmanFilter {
