@@ -1,127 +1,62 @@
-// Test the Kalman Filter implementation with a simple example
-#include "../Kalman.hpp"  
-#include <iostream>
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include "../../include/doctest.h"
+#include "../Kalman.hpp"
 #include <Eigen/Dense>
-#include <vector>
 
-
-// Multipe stacked n-dimensional state vectors 
-int main() 
+// Example: Test KalmanFilter initialization
+TEST_CASE("KalmanFilter initializes state and covariance correctly")
 {
-    
-    /**  
-     * System dynamics  
-     */ 
+  Eigen::MatrixXd S = Eigen::MatrixXd::Identity(2, 2);
+  Eigen::MatrixXd F = Eigen::MatrixXd::Identity(1, 2);
+  Eigen::MatrixXd Q = Eigen::MatrixXd::Identity(2, 2) * 0.01;
+  Eigen::MatrixXd R = Eigen::MatrixXd::Identity(1, 1) * 0.1;
+  Eigen::MatrixXd P = Eigen::MatrixXd::Identity(2, 2);
+  Eigen::VectorXd x = Eigen::VectorXd::Zero(2);
 
-    // E.g., x, y, z
-    int physical_dimensions = 3; 
+  KalmanFilter kf(S, F, Q, R, P, x);
 
-    // 1 or 2 for first or second order ODE
-    int system_order = 2; 
+  CHECK((kf.getState() - x).norm() == doctest::Approx(0.0));
+  CHECK((kf.getCovariance() - P).norm() == doctest::Approx(0.0));
+}
 
-    /**
-     * System state
-     */
+// Example: Test prediction step
+TEST_CASE("KalmanFilter prediction step updates state")
+{
+  Eigen::MatrixXd S = Eigen::MatrixXd::Identity(2, 2);
+  Eigen::MatrixXd F = Eigen::MatrixXd::Identity(2, 2); // State transition
+  Eigen::MatrixXd Q = Eigen::MatrixXd::Identity(2, 2) * 0.01;
+  Eigen::MatrixXd R = Eigen::MatrixXd::Identity(1, 1) * 0.1;
+  Eigen::MatrixXd P = Eigen::MatrixXd::Identity(2, 2);
+  Eigen::VectorXd x = Eigen::VectorXd::Zero(2);
 
-    // e.g., 6 for 3D state and 2nd order dynamics 
-    int state_dimensions = physical_dimensions * system_order; 
+  KalmanFilter kf(S, F, Q, R, P, x);
 
-    // E.g., GRPs or SV CMs 
-    int num_targets = 2; 
+  kf.predict();
 
-    // Total length of the data vector at a single nepoch
-    int stacked_state_size = state_dimensions * num_targets;
+  // For identity F and zero x, state should remain zero
+  CHECK((kf.getState() - x).norm() == doctest::Approx(0.0));
+  // Covariance should increase by Q
+  CHECK((kf.getCovariance() - (P + Q)).norm() == doctest::Approx(0.0));
+}
 
-    /** 
-     * Tracking data
-     * */ 
+// Example: Test update step
+TEST_CASE("KalmanFilter update step assimilates measurement")
+{
+  Eigen::MatrixXd S = Eigen::MatrixXd::Identity(2, 2);
+  Eigen::MatrixXd F = Eigen::MatrixXd::Identity(2, 2);
+  Eigen::MatrixXd Q = Eigen::MatrixXd::Identity(2, 2) * 0.01;
+  Eigen::MatrixXd R = Eigen::MatrixXd::Identity(2, 2) * 0.1;
+  Eigen::MatrixXd P = Eigen::MatrixXd::Identity(2, 2);
+  Eigen::VectorXd x = Eigen::VectorXd::Zero(2);
 
-    // Experiment with how few epochs required to track targets  
-    int num_epochs = 10; 
+  KalmanFilter kf(S, F, Q, R, P, x);
 
-    // assume obs dimensions are the same as physical dimensions
-    int num_obs_dimensions = physical_dimensions; 
+  Eigen::VectorXd y = Eigen::VectorXd::Ones(2); // measurement
 
-    // E.g., 6 for 3 obs dimensions and 2 targets
-    int num_obs_per_epoch = num_obs_dimensions * num_targets; 
+  kf.update(y);
 
-    // E.g., 18 for 3 epochs and 6 obs per epoch 
-    int num_stacked_obs = num_epochs * num_obs_per_epoch; 
-
-    // Defines the time units 
-    double dt = 2.0; 
-
-    // State transition matrix
-    Eigen::MatrixXd Seye = Eigen::MatrixXd::Identity(physical_dimensions, physical_dimensions); 
-    Eigen::MatrixXd S(stacked_state_size, stacked_state_size);
-    for (int i =0; i < num_targets; i++) {
-
-        // the first row of each target 
-        int idx = i * state_dimensions; // 0, 6, 12 
-
-        // positions 
-        S.block(idx, idx, physical_dimensions, physical_dimensions) = Seye;
-        
-        // Apply rate terms 
-        for (int j = 1; j < system_order; j++) {
-
-            int jdx = idx + j * physical_dimensions; // 3, 6, 9
-            S.block(idx, jdx, physical_dimensions, physical_dimensions) = \
-                std::pow(dt, j) / std::tgamma(j+1) * Seye;
-
-            // The identity part 
-            S.block(idx + j * physical_dimensions, idx + \
-                j * physical_dimensions, physical_dimensions, physical_dimensions) \
-                = Seye;
-        }
-    }
-    std::cout << "State Transition Matrix S:\n" << S << std::endl;
-
-    // Features matrix
-    Eigen::MatrixXd F = Eigen::MatrixXd::Zero(num_obs_per_epoch, stacked_state_size);
-    for (int i = 0; i < num_targets; i++) {
-        int idx = i * state_dimensions;
-        std::cout << "indices" << i * num_obs_dimensions << idx <<  ":\n";
-        F(i * num_obs_dimensions, idx) = 1;         // observe x
-        F(i * num_obs_dimensions + 1, idx + 1) = 1; // observe y
-        F(i * num_obs_dimensions + 2, idx + 2) = 1; // observe z
-    }
-    std::cout << "Design matrix:\n" << F << "\n";
-
-    Eigen::MatrixXd Q = Eigen::MatrixXd::Identity(stacked_state_size, stacked_state_size) * 0.01;
-    Eigen::MatrixXd R = Eigen::MatrixXd::Identity(num_obs_per_epoch, num_obs_per_epoch) * 0.1;
-    Eigen::MatrixXd P = Eigen::MatrixXd::Identity(stacked_state_size, stacked_state_size);
-    Eigen::VectorXd x = Eigen::VectorXd::Zero(stacked_state_size);
-    KalmanFilter kf(S, F, Q, R, P, x);
-
-    // Run the simulation
-    Eigen::VectorXd x_true = Eigen::VectorXd::Random(stacked_state_size) * 10.0;    
-    std::cout << "True a priori state:\n" << x_true << "\n";
-    
-    for (int iepoch = 0; iepoch < num_epochs; ++iepoch) {
-
-        // propagate the true state
-        x_true = S * x_true; 
-
-        // Simulate noisy data
-        Eigen::VectorXd noise = Eigen::VectorXd::Random(num_obs_per_epoch);
-        std::cout << "Noise:\n" << noise << "\n";
-        Eigen::VectorXd y = F * x_true + 0.1 * noise; 
-        std::cout << "Simulated data:\n" << y << "\n";
-
-        // Kalman filter prediction and update
-        kf.predict();
-        std::cout << "Predicted State:\n" << kf.getState() << "\n";
-        std::cout << "Predicted Covariance:\n" << kf.getCovariance() << "\n";
-
-        kf.update(y);
-
-        // Report the results
-        std::cout << "Final Updated State:\n" << kf.getState() << "\n";
-        //std::cout << "Final Updated Covariance:\n" << kf.getCovariance() << "\n";
-        std::cout << "True state:\n" << x_true << "\n";
-        std::cout << "True state - estimated state:\n" << x_true - kf.getState() << "\n";
-    }
-
-    return 0; // best practice to return 0
-} // end of main
+  // After update, state should move toward measurement
+  CHECK((kf.getState() - y).norm() < (y.norm())); // Should be closer to y than zero
+  // Covariance should decrease (be less than initial P)
+  CHECK(kf.getCovariance().norm() < P.norm());
+}
