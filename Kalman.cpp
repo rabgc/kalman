@@ -7,12 +7,12 @@
 #include "Kalman.hpp"
 
 KalmanFilter::KalmanFilter(
-  const Eigen::MatrixXd &S,
-  const Eigen::MatrixXd &F,
-  const Eigen::MatrixXd &Q,
-  const Eigen::MatrixXd &R,
-  const Eigen::MatrixXd &P,
-  const Eigen::VectorXd &x) : S_(S), F_(F), Q_(Q), R_(R), P_(P), x_(x)
+  const Eigen::MatrixXd& S,
+  const Eigen::MatrixXd& F,
+  const Eigen::MatrixXd& Q,
+  const Eigen::MatrixXd& R,
+  const Eigen::MatrixXd& P,
+  const Eigen::VectorXd& x) : S_(S), F_(F), Q_(Q), R_(R), P_(P), x_(x)
 {
 
   // Ensure matrix dimensions are consistent
