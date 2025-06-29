@@ -23,7 +23,7 @@ TEST_CASE("KalmanFilter initializes state and covariance correctly")
 TEST_CASE("KalmanFilter prediction step updates state")
 {
   Eigen::MatrixXd S = Eigen::MatrixXd::Identity(2, 2);
-  Eigen::MatrixXd F = Eigen::MatrixXd::Identity(2, 2); // State transition
+  Eigen::MatrixXd F = Eigen::MatrixXd::Identity(1, 2); // State transition
   Eigen::MatrixXd Q = Eigen::MatrixXd::Identity(2, 2) * 0.01;
   Eigen::MatrixXd R = Eigen::MatrixXd::Identity(1, 1) * 0.1;
   Eigen::MatrixXd P = Eigen::MatrixXd::Identity(2, 2);
@@ -43,10 +43,10 @@ TEST_CASE("KalmanFilter prediction step updates state")
 TEST_CASE("KalmanFilter update step assimilates measurement")
 {
   Eigen::MatrixXd S = Eigen::MatrixXd::Identity(2, 2);
-  Eigen::MatrixXd F = Eigen::MatrixXd::Identity(2, 2);
+  Eigen::MatrixXd F = Eigen::MatrixXd::Identity(2, 2); // make sure problem is well-posed here
   Eigen::MatrixXd Q = Eigen::MatrixXd::Identity(2, 2) * 0.01;
-  Eigen::MatrixXd R = Eigen::MatrixXd::Identity(2, 2) * 0.1;
-  Eigen::MatrixXd P = Eigen::MatrixXd::Identity(2, 2);
+  Eigen::MatrixXd R = Eigen::MatrixXd::Identity(2, 2) * 0.01;
+  Eigen::MatrixXd P = Eigen::MatrixXd::Identity(2, 2) * 1000;
   Eigen::VectorXd x = Eigen::VectorXd::Zero(2);
 
   KalmanFilter kf(S, F, Q, R, P, x);
@@ -54,9 +54,11 @@ TEST_CASE("KalmanFilter update step assimilates measurement")
   Eigen::VectorXd y = Eigen::VectorXd::Ones(2); // measurement
 
   kf.update(y);
-
+  
   // After update, state should move toward measurement
-  CHECK((kf.getState() - y).norm() < (y.norm())); // Should be closer to y than zero
+  auto state = kf.getState(); // need this and next statements separate to get the objects
+  auto predicted = F * state; 
+  CHECK((predicted - y).norm() < (y.norm())); // Should be closer to y than zero
   // Covariance should decrease (be less than initial P)
   CHECK(kf.getCovariance().norm() < P.norm());
 }

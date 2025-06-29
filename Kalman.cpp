@@ -3,7 +3,7 @@
  Author: Rick.Bennett
  Created on March 16, 2025, 6:00 AM
  */
-
+#include <iostream>
 #include "Kalman.hpp"
 
 KalmanFilter::KalmanFilter(
@@ -41,7 +41,7 @@ void KalmanFilter::update(const Eigen::VectorXd &z)
 
   // Innovations covariance
   Eigen::MatrixXd C = F_ * P_ * F_.transpose() + R_;
-
+  
   // Kalman gain
   Eigen::MatrixXd K = P_ * F_.transpose() *
                       C.ldlt().solve(Eigen::MatrixXd::Identity(C.rows(), C.cols()));
@@ -57,7 +57,9 @@ void KalmanFilter::update(const Eigen::VectorXd &z)
 
   // Ensure positive definiteness is preserved (cf. Bierman, 1977)
   P_ = (P_ + P_.transpose()) / 2.0;
+  
 }
+
 
 Eigen::VectorXd KalmanFilter::getState() const
 {
