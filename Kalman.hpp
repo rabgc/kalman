@@ -33,9 +33,9 @@ public:
    * @param P A priori state covariance.
    * @param x A priori state estimate.
    */
-  KalmanFilter(const Eigen::MatrixXd &S, const Eigen::MatrixXd &F,
-               const Eigen::MatrixXd &Q, const Eigen::MatrixXd &R,
-               const Eigen::MatrixXd &P, const Eigen::VectorXd &x);
+  KalmanFilter(const Eigen::MatrixXd& S, const Eigen::MatrixXd& F,
+               const Eigen::MatrixXd& Q, const Eigen::MatrixXd& R,
+               const Eigen::MatrixXd& P, const Eigen::VectorXd& x);
 
   /**
    * @brief Perform prediction step of the Kalman filter.
@@ -46,7 +46,7 @@ public:
    * @brief Update the state estimate using a new measurement.
    * @param z The measurement vector.
    */
-  void update(const Eigen::VectorXd &z);
+  void update(const Eigen::VectorXd& z);
 
   /**
    * @brief Returns the current state estimate.
